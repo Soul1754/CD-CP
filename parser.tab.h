@@ -41,39 +41,45 @@
    enum yytokentype {
      IF = 258,
      ELSE = 259,
-     SWITCH = 260,
-     CASE = 261,
-     DEFAULT = 262,
-     BREAK = 263,
-     LBRACE = 264,
-     RBRACE = 265,
-     LPAREN = 266,
-     RPAREN = 267,
-     EQ = 268,
-     ASSIGN = 269,
-     SEMICOLON = 270,
-     COLON = 271,
-     NUMBER = 272,
-     IDENTIFIER = 273
+     WHILE = 260,
+     SWITCH = 261,
+     CASE = 262,
+     DEFAULT = 263,
+     BREAK = 264,
+     TYPE = 265,
+     EQ = 266,
+     LBRACE = 267,
+     RBRACE = 268,
+     LPAREN = 269,
+     RPAREN = 270,
+     ASSIGN = 271,
+     SEMICOLON = 272,
+     COLON = 273,
+     NUMBER = 274,
+     IDENTIFIER = 275,
+     LOWER_THAN_ELSE = 276
    };
 #endif
 /* Tokens.  */
 #define IF 258
 #define ELSE 259
-#define SWITCH 260
-#define CASE 261
-#define DEFAULT 262
-#define BREAK 263
-#define LBRACE 264
-#define RBRACE 265
-#define LPAREN 266
-#define RPAREN 267
-#define EQ 268
-#define ASSIGN 269
-#define SEMICOLON 270
-#define COLON 271
-#define NUMBER 272
-#define IDENTIFIER 273
+#define WHILE 260
+#define SWITCH 261
+#define CASE 262
+#define DEFAULT 263
+#define BREAK 264
+#define TYPE 265
+#define EQ 266
+#define LBRACE 267
+#define RBRACE 268
+#define LPAREN 269
+#define RPAREN 270
+#define ASSIGN 271
+#define SEMICOLON 272
+#define COLON 273
+#define NUMBER 274
+#define IDENTIFIER 275
+#define LOWER_THAN_ELSE 276
 
 
 
@@ -86,7 +92,7 @@ typedef union YYSTYPE
     char* sval;
 }
 /* Line 1529 of yacc.c.  */
-#line 90 "parser.tab.h"
+#line 96 "parser.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

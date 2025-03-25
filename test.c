@@ -1,12 +1,21 @@
-if (x == 10) { 
-    x = 5; 
+void main(){
+int x;
+if (x == 5) {
+    x = 10;
 }
-else { 
-    x = 20; 
+else {
+    x = 20;
 }
 
 switch (x) {
-    case 1: x = 10; break;
-    case 2: x = 20; break;
-    default: x = 0; break;
+    case 1:
+        x = 100;
+        break;
+    case 2:
+        x = 200;
+        break;
+    default:
+        x = 0;
+        break;
+}
 }

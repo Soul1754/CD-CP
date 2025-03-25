@@ -14,26 +14,47 @@ int yylex();
 }
 
 /* Token definitions with types */
-%token IF ELSE SWITCH CASE DEFAULT BREAK LBRACE RBRACE LPAREN RPAREN EQ ASSIGN SEMICOLON COLON
+%token IF ELSE WHILE SWITCH CASE DEFAULT BREAK TYPE EQ
+%token LBRACE RBRACE LPAREN RPAREN ASSIGN SEMICOLON COLON
 %token <ival> NUMBER
 %token <sval> IDENTIFIER
+
+/* Precedence rules to resolve conflicts */
+%nonassoc LOWER_THAN_ELSE
+%nonassoc ELSE
 
 %%
 
 program:
-    statement_list
+    function_definition
+    ;
+
+function_definition:
+    TYPE IDENTIFIER LPAREN RPAREN compound_statement
+    | IDENTIFIER IDENTIFIER LPAREN RPAREN compound_statement
+    ;
+
+compound_statement:
+    LBRACE statement_list RBRACE
     ;
 
 statement_list:
     statement_list statement
-    | statement
+    | /* empty */
     ;
 
 statement:
-    if_statement
+    compound_statement
+    | if_statement
     | switch_statement
     | assignment_statement
-    | SEMICOLON    /* Allow empty statements */
+    | declaration_statement
+    | SEMICOLON
+    ;
+
+declaration_statement:
+    TYPE IDENTIFIER SEMICOLON
+    | TYPE IDENTIFIER ASSIGN NUMBER SEMICOLON
     ;
 
 assignment_statement:
@@ -41,8 +62,8 @@ assignment_statement:
     ;
 
 if_statement:
-    IF LPAREN condition RPAREN LBRACE statement_list RBRACE
-    | IF LPAREN condition RPAREN LBRACE statement_list RBRACE ELSE LBRACE statement_list RBRACE
+    IF LPAREN condition RPAREN statement %prec LOWER_THAN_ELSE
+    | IF LPAREN condition RPAREN statement ELSE statement
     ;
 
 switch_statement:
@@ -70,7 +91,7 @@ default_statement:
 
 condition:
     IDENTIFIER EQ NUMBER
-    | IDENTIFIER    /* Allow just identifier as condition */
+    | IDENTIFIER
     ;
 
 %%
@@ -82,6 +103,7 @@ void yyerror(const char *msg) {
 int main() {
     printf("Enter C code for conditional or switch-case statements:\n");
     yyparse();
+    
     printf("Parsing completed successfully!\n");
     return 0;
 }
