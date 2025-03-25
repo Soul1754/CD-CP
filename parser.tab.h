@@ -86,13 +86,14 @@
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 11 "parser.y"
+#line 41 "/Users/siddhantgaikwad/Developer/College/TY/CD/CD CP/parser.y"
 {
     int ival;
     char* sval;
+    struct ast_node* ast;
 }
 /* Line 1529 of yacc.c.  */
-#line 96 "parser.tab.h"
+#line 97 "parser.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
