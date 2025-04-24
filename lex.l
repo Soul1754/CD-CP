@@ -18,14 +18,19 @@ extern int current_scope;
 "break"         { printf("BREAK token\n"); return BREAK; }
 "=="            { printf("EQ token\n"); return EQ; }
 "="             { printf("ASSIGN token\n"); return ASSIGN; }
-"{"             { printf("LBRACE token\n"); current_scope++; return LBRACE; }
-"}"             { printf("RBRACE token\n"); current_scope--; return RBRACE; }
+"{"             { printf("LBRACE token\n"); return LBRACE; }
+"}"             { printf("RBRACE token\n"); return RBRACE; }
 "("             { printf("LPAREN token\n"); return LPAREN; }
 ")"             { printf("RPAREN token\n"); return RPAREN; }
 ";"             { printf("SEMICOLON token\n"); return SEMICOLON; }
 ":"             { printf("COLON token\n"); return COLON; }
 [0-9]+          { printf("NUMBER token: %d\n", atoi(yytext)); yylval.ival = atoi(yytext); return NUMBER; }
 [a-zA-Z][a-zA-Z0-9_]*  { printf("IDENTIFIER token: %s\n", yytext); yylval.sval = strdup(yytext); return IDENTIFIER; }
+"<"            { printf("LT token\n"); return LT; }
+">"            { printf("GT token\n"); return GT; }
+"<="           { printf("LE token\n"); return LE; }
+">="           { printf("GE token\n"); return GE; }
+"!="           { printf("NE token\n"); return NE; }
 [ \t\n]+        { /* ignore whitespace */ }
 .               { printf("Unknown character: %s\n", yytext); }
 %%

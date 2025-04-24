@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+extern FILE *yyin;
 
 void yyerror(const char *msg);
 int yylex();
@@ -46,6 +47,7 @@ void print_ast(struct ast_node *node, int level);
 
 %token IF ELSE WHILE SWITCH CASE DEFAULT BREAK TYPE EQ
 %token LBRACE RBRACE LPAREN RPAREN ASSIGN SEMICOLON COLON
+%token LT GT LE GE NE
 %token <ival> NUMBER
 %token <sval> IDENTIFIER
 
@@ -79,10 +81,10 @@ function_definition:
     ;
 
 compound_statement:
-    LBRACE statement_list RBRACE
+    LBRACE { current_scope++; } statement_list RBRACE { current_scope--; }
     {
         $$ = create_ast_node("COMPOUND", NULL);
-        $$->left = $2;
+        $$->left = $3;
     }
     ;
 
@@ -108,7 +110,17 @@ statement:
 declaration_statement:
     TYPE IDENTIFIER SEMICOLON
     {
-        if (lookup_symbol($2, current_scope)) {
+        // Only check for redeclaration in the current scope
+        struct symbol *tmp = symbol_table;
+        int redeclared = 0;
+        while (tmp) {
+            if (strcmp(tmp->name, $2) == 0 && tmp->scope == current_scope) {
+                redeclared = 1;
+                break;
+            }
+            tmp = tmp->next;
+        }
+        if (redeclared) {
             yyerror("Variable already declared");
         } else {
             printf("decl:int\nid:%s\n", $2);
@@ -121,8 +133,8 @@ declaration_statement:
 assignment_statement:
     IDENTIFIER ASSIGN NUMBER SEMICOLON
     {
+        // Find the variable in the current scope or any parent scope
         struct symbol *s = lookup_symbol($1, current_scope);
-        if (!s) s = lookup_symbol($1, 0);
         if (!s) {
             yyerror("Undefined variable");
         } else {
@@ -157,13 +169,16 @@ if_statement:
     ;
 
 switch_statement:
-    SWITCH LPAREN IDENTIFIER RPAREN LBRACE case_list RBRACE
+    SWITCH LPAREN IDENTIFIER RPAREN LBRACE { current_scope++; } case_list RBRACE { current_scope--; }
     {
-        if (!lookup_symbol($3, current_scope) && !lookup_symbol($3, 0)) {
+        // Look up the variable in the parent scope since we're checking from inside the switch
+        struct symbol *s = lookup_symbol($3, current_scope);
+        if (!s) {
             yyerror("Undefined variable in switch statement");
+        } else {
+            $$ = create_ast_node("SWITCH", $3);
+            $$->left = $7;
         }
-        $$ = create_ast_node("SWITCH", $3);
-        $$->left = $6;
     }
     ;
 
@@ -189,30 +204,86 @@ case_statements:
     ;
 
 case_statement:
-    CASE NUMBER COLON statement_list BREAK SEMICOLON
+    CASE NUMBER COLON { current_scope++; } statement_list BREAK SEMICOLON { current_scope--; }
     {
         $$ = create_ast_node("CASE", NULL);
         $$->value = malloc(12);
         sprintf($$->value, "%d", $2);
-        $$->left = $4;
+        $$->left = $5;
     }
     ;
 
 default_statement:
-    DEFAULT COLON statement_list BREAK SEMICOLON
+    DEFAULT COLON { current_scope++; } statement_list BREAK SEMICOLON { current_scope--; }
     {
         $$ = create_ast_node("DEFAULT", NULL);
-        $$->left = $3;
+        $$->left = $4;
     }
     ;
 
 condition:
     IDENTIFIER EQ NUMBER
     {
-        if (!lookup_symbol($1, current_scope) && !lookup_symbol($1, 0)) {
+        struct symbol *s = lookup_symbol($1, current_scope);
+        if (!s) {
             yyerror("Undefined variable in condition");
         }
-        $$ = create_ast_node("CONDITION", $1);
+        $$ = create_ast_node("COND_EQ", $1);
+        $$->left = create_ast_node("NUMBER", NULL);
+        $$->left->value = malloc(12);
+        sprintf($$->left->value, "%d", $3);
+    }
+    | IDENTIFIER LT NUMBER
+    {
+        struct symbol *s = lookup_symbol($1, current_scope);
+        if (!s) {
+            yyerror("Undefined variable in condition");
+        }
+        $$ = create_ast_node("COND_LT", $1);
+        $$->left = create_ast_node("NUMBER", NULL);
+        $$->left->value = malloc(12);
+        sprintf($$->left->value, "%d", $3);
+    }
+    | IDENTIFIER GT NUMBER
+    {
+        struct symbol *s = lookup_symbol($1, current_scope);
+        if (!s) {
+            yyerror("Undefined variable in condition");
+        }
+        $$ = create_ast_node("COND_GT", $1);
+        $$->left = create_ast_node("NUMBER", NULL);
+        $$->left->value = malloc(12);
+        sprintf($$->left->value, "%d", $3);
+    }
+    | IDENTIFIER LE NUMBER
+    {
+        struct symbol *s = lookup_symbol($1, current_scope);
+        if (!s) {
+            yyerror("Undefined variable in condition");
+        }
+        $$ = create_ast_node("COND_LE", $1);
+        $$->left = create_ast_node("NUMBER", NULL);
+        $$->left->value = malloc(12);
+        sprintf($$->left->value, "%d", $3);
+    }
+    | IDENTIFIER GE NUMBER
+    {
+        struct symbol *s = lookup_symbol($1, current_scope);
+        if (!s) {
+            yyerror("Undefined variable in condition");
+        }
+        $$ = create_ast_node("COND_GE", $1);
+        $$->left = create_ast_node("NUMBER", NULL);
+        $$->left->value = malloc(12);
+        sprintf($$->left->value, "%d", $3);
+    }
+    | IDENTIFIER NE NUMBER
+    {
+        struct symbol *s = lookup_symbol($1, current_scope);
+        if (!s) {
+            yyerror("Undefined variable in condition");
+        }
+        $$ = create_ast_node("COND_NE", $1);
         $$->left = create_ast_node("NUMBER", NULL);
         $$->left->value = malloc(12);
         sprintf($$->left->value, "%d", $3);
@@ -223,12 +294,19 @@ condition:
 
 struct symbol* lookup_symbol(char *name, int scope) {
     struct symbol *s = symbol_table;
+    int max_scope = -1;
+    struct symbol *result = NULL;
+    
+    // First, try to find in current scope or any parent scope
     while (s) {
-        if (strcmp(s->name, name) == 0 && s->scope <= scope)
-            return s;
+        if (strcmp(s->name, name) == 0 && s->scope <= scope && s->scope > max_scope) {
+            result = s;
+            max_scope = s->scope;
+        }
         s = s->next;
     }
-    return NULL;
+    
+    return result;
 }
 
 void insert_symbol(char *name, int type, int scope) {
@@ -294,8 +372,15 @@ void yyerror(const char *msg) {
 }
 
 int main() {
-    printf("Enter C code for conditional or switch-case statements:\n");
+    FILE *file = fopen("test.c", "r");
+    if (!file) {
+        perror("Failed to open test.c");
+        return 1;
+    }
+    extern FILE *yyin;
+    yyin = file;
     yyparse();
+    fclose(file);
     print_symbol_table();
     printf("Parsing completed successfully!\n");
     return 0;

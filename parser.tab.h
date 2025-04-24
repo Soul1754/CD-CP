@@ -55,9 +55,14 @@
      ASSIGN = 271,
      SEMICOLON = 272,
      COLON = 273,
-     NUMBER = 274,
-     IDENTIFIER = 275,
-     LOWER_THAN_ELSE = 276
+     LT = 274,
+     GT = 275,
+     LE = 276,
+     GE = 277,
+     NE = 278,
+     NUMBER = 279,
+     IDENTIFIER = 280,
+     LOWER_THAN_ELSE = 281
    };
 #endif
 /* Tokens.  */
@@ -77,23 +82,28 @@
 #define ASSIGN 271
 #define SEMICOLON 272
 #define COLON 273
-#define NUMBER 274
-#define IDENTIFIER 275
-#define LOWER_THAN_ELSE 276
+#define LT 274
+#define GT 275
+#define LE 276
+#define GE 277
+#define NE 278
+#define NUMBER 279
+#define IDENTIFIER 280
+#define LOWER_THAN_ELSE 281
 
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 41 "/Users/siddhantgaikwad/Developer/College/TY/CD/CD CP/parser.y"
+#line 42 "parser.y"
 {
     int ival;
     char* sval;
     struct ast_node* ast;
 }
 /* Line 1529 of yacc.c.  */
-#line 97 "parser.tab.h"
+#line 107 "parser.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
