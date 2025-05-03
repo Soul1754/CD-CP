@@ -1,4 +1,4 @@
-void main(){
+int main(){
     int x;
     x = 1;
     int y;
@@ -11,6 +11,7 @@ void main(){
         y = 20;
     }
     else {
+        
         int y;
         y = 30;
         x = 3;
@@ -30,4 +31,6 @@ void main(){
     }
     int w;
     w = 999;
+
+    return 0;
 }

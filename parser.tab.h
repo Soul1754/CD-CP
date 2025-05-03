@@ -48,21 +48,22 @@
      BREAK = 264,
      TYPE = 265,
      EQ = 266,
-     LBRACE = 267,
-     RBRACE = 268,
-     LPAREN = 269,
-     RPAREN = 270,
-     ASSIGN = 271,
-     SEMICOLON = 272,
-     COLON = 273,
-     LT = 274,
-     GT = 275,
-     LE = 276,
-     GE = 277,
-     NE = 278,
-     NUMBER = 279,
-     IDENTIFIER = 280,
-     LOWER_THAN_ELSE = 281
+     RETURN = 267,
+     LBRACE = 268,
+     RBRACE = 269,
+     LPAREN = 270,
+     RPAREN = 271,
+     ASSIGN = 272,
+     SEMICOLON = 273,
+     COLON = 274,
+     LT = 275,
+     GT = 276,
+     LE = 277,
+     GE = 278,
+     NE = 279,
+     NUMBER = 280,
+     IDENTIFIER = 281,
+     LOWER_THAN_ELSE = 282
    };
 #endif
 /* Tokens.  */
@@ -75,21 +76,22 @@
 #define BREAK 264
 #define TYPE 265
 #define EQ 266
-#define LBRACE 267
-#define RBRACE 268
-#define LPAREN 269
-#define RPAREN 270
-#define ASSIGN 271
-#define SEMICOLON 272
-#define COLON 273
-#define LT 274
-#define GT 275
-#define LE 276
-#define GE 277
-#define NE 278
-#define NUMBER 279
-#define IDENTIFIER 280
-#define LOWER_THAN_ELSE 281
+#define RETURN 267
+#define LBRACE 268
+#define RBRACE 269
+#define LPAREN 270
+#define RPAREN 271
+#define ASSIGN 272
+#define SEMICOLON 273
+#define COLON 274
+#define LT 275
+#define GT 276
+#define LE 277
+#define GE 278
+#define NE 279
+#define NUMBER 280
+#define IDENTIFIER 281
+#define LOWER_THAN_ELSE 282
 
 
 
@@ -103,7 +105,7 @@ typedef union YYSTYPE
     struct ast_node* ast;
 }
 /* Line 1529 of yacc.c.  */
-#line 107 "parser.tab.h"
+#line 109 "parser.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

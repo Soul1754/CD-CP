@@ -44,8 +44,7 @@ void print_ast(struct ast_node *node, int level);
     char* sval;
     struct ast_node* ast;
 }
-
-%token IF ELSE WHILE SWITCH CASE DEFAULT BREAK TYPE EQ
+%token IF ELSE WHILE SWITCH CASE DEFAULT BREAK TYPE EQ RETURN
 %token LBRACE RBRACE LPAREN RPAREN ASSIGN SEMICOLON COLON
 %token LT GT LE GE NE
 %token <ival> NUMBER
@@ -104,6 +103,8 @@ statement:
     | switch_statement { $$ = $1; }
     | assignment_statement { $$ = $1; }
     | declaration_statement { $$ = $1; }
+    | RETURN NUMBER SEMICOLON { $$ = create_ast_node("RETURN", NULL); $$->left = create_ast_node("NUMBER", NULL); $$->left->value = malloc(12); sprintf($$->left->value, "%d", $2); }
+    | RETURN SEMICOLON { $$ = create_ast_node("RETURN", NULL); }
     | SEMICOLON { $$ = NULL; }
     ;
 
