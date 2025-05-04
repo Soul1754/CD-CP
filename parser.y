@@ -123,8 +123,8 @@ declaration_statement:
         }
         if (redeclared) {
             yyerror("Variable already declared");
-        } else {
-            printf("decl:int\nid:%s\n", $2);
+       } else {
+            printf("\n[DECLARATION] Type: int, Identifier: %s\n", $2);
             insert_symbol($2, 0, current_scope);
             $$ = create_ast_node("DECL", $2);
         }
@@ -140,7 +140,7 @@ assignment_statement:
             yyerror("Undefined variable");
         } else {
             update_symbol_value($1, s->scope, $3);
-            printf("id:%s\nassignop:=\nnum:%d\n", $1, $3);
+            printf("\n[ASSIGNMENT] %s = %d\n", $1, $3);
             $$ = create_ast_node("ASSIGN", $1);
             $$->left = create_ast_node("NUMBER", NULL);
             $$->left->value = malloc(12);
@@ -152,14 +152,14 @@ assignment_statement:
 if_statement:
     IF LPAREN condition RPAREN statement %prec LOWER_THAN_ELSE
     {
-        printf("if\n");
+        printf("\n[CONTROL] IF Statement\n");
         $$ = create_ast_node("IF", NULL);
         $$->left = $3;
         $$->right = $5;
     }
     | IF LPAREN condition RPAREN statement ELSE statement
     {
-        printf("if-else\n");
+        printf("\n[CONTROL] IF-ELSE Statement\n");
         $$ = create_ast_node("IF_ELSE", NULL);
         $$->left = $3;
         struct ast_node *then_else = create_ast_node("THEN_ELSE", NULL);
@@ -229,6 +229,7 @@ condition:
         if (!s) {
             yyerror("Undefined variable in condition");
         }
+        printf("\n[CONDITION] %s == %d\n", $1, $3);
         $$ = create_ast_node("COND_EQ", $1);
         $$->left = create_ast_node("NUMBER", NULL);
         $$->left->value = malloc(12);
@@ -318,7 +319,9 @@ void insert_symbol(char *name, int type, int scope) {
     s->value = 0;  // Default value
     
     // Set data type string
-    if (type == 0) {
+    if (strcmp(name, "main") == 0 && scope == 0) {
+        s->dtype = strdup("Function");
+    } else if (type == 0) {
         s->dtype = strdup("int");
     } else if (type == 1) {
         s->dtype = strdup("float");
@@ -338,15 +341,18 @@ void update_symbol_value(char *name, int scope, int value) {
 }
 
 void print_symbol_table() {
-    printf("\n---------------\n\n");
-    printf("Symbol Table\n");
-    printf("%-15s %-15s %-15s %-15s\n", "Symbol", "Scope", "dtype", "Value");
+    printf("\n==================================================\n");
+    printf("                 SYMBOL TABLE                 \n");
+    printf("==================================================\n");
+    printf("| %-15s | %-10s | %-15s | %-10s |\n", "Symbol", "Scope", "Data Type", "Value");
+    printf("--------------------------------------------------\n");
     
     struct symbol *s = symbol_table;
     while (s) {
-        printf("%-15s %-15d %-15s %-15d\n", s->name, s->scope, s->dtype, s->value);
+        printf("| %-15s | %-10d | %-15s | %-10d |\n", s->name, s->scope, s->dtype, s->value);
         s = s->next;
     }
+    printf("==================================================\n");
 }
 
 struct ast_node* create_ast_node(char *type, char *value) {
@@ -360,12 +366,31 @@ struct ast_node* create_ast_node(char *type, char *value) {
 
 void print_ast(struct ast_node *node, int level) {
     if (!node) return;
-    for (int i = 0; i < level; i++) printf("  ");
+    
+    // Print header for root node
+    if (level == 0) {
+        printf("\n==================================================\n");
+        printf("             ABSTRACT SYNTAX TREE             \n");
+        printf("==================================================\n");
+    }
+    
+    // Print indentation based on level
+    for (int i = 0; i < level; i++) printf("│  ");
+    
+    // Print node information with better formatting
+    if (level > 0) printf("├─ ");
     printf("%s", node->type);
     if (node->value) printf(" (%s)", node->value);
     printf("\n");
+    
+    // Print children
     print_ast(node->left, level + 1);
     print_ast(node->right, level + 1);
+    
+    // Print footer for root node
+    if (level == 0) {
+        printf("==================================================\n");
+    }
 }
 
 void yyerror(const char *msg) {
@@ -373,6 +398,11 @@ void yyerror(const char *msg) {
 }
 
 int main() {
+    printf("\n==================================================\n");
+    printf("             C COMPILER PROJECT               \n");
+    printf("==================================================\n");
+    printf("Processing file: test.c\n\n");
+    
     FILE *file = fopen("test.c", "r");
     if (!file) {
         perror("Failed to open test.c");
@@ -383,6 +413,9 @@ int main() {
     yyparse();
     fclose(file);
     print_symbol_table();
-    printf("Parsing completed successfully!\n");
+    
+    printf("\n==================================================\n");
+    printf("          COMPILATION COMPLETED SUCCESSFULLY    \n");
+    printf("==================================================\n");
     return 0;
 }

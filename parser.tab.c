@@ -510,8 +510,8 @@ static const yytype_uint16 yyrline[] =
        0,    65,    65,    73,    83,    83,    83,    91,    97,   101,
      102,   103,   104,   105,   106,   107,   108,   112,   135,   153,
      160,   173,   173,   173,   187,   193,   194,   198,   204,   208,
-     208,   208,   218,   218,   218,   226,   237,   248,   259,   270,
-     281
+     208,   208,   218,   218,   218,   226,   238,   249,   260,   271,
+     282
 };
 #endif
 
@@ -1571,8 +1571,8 @@ yyreduce:
         }
         if (redeclared) {
             yyerror("Variable already declared");
-        } else {
-            printf("decl:int\nid:%s\n", (yyvsp[(2) - (3)].sval));
+       } else {
+            printf("\n[DECLARATION] Type: int, Identifier: %s\n", (yyvsp[(2) - (3)].sval));
             insert_symbol((yyvsp[(2) - (3)].sval), 0, current_scope);
             (yyval.ast) = create_ast_node("DECL", (yyvsp[(2) - (3)].sval));
         }
@@ -1588,7 +1588,7 @@ yyreduce:
             yyerror("Undefined variable");
         } else {
             update_symbol_value((yyvsp[(1) - (4)].sval), s->scope, (yyvsp[(3) - (4)].ival));
-            printf("id:%s\nassignop:=\nnum:%d\n", (yyvsp[(1) - (4)].sval), (yyvsp[(3) - (4)].ival));
+            printf("\n[ASSIGNMENT] %s = %d\n", (yyvsp[(1) - (4)].sval), (yyvsp[(3) - (4)].ival));
             (yyval.ast) = create_ast_node("ASSIGN", (yyvsp[(1) - (4)].sval));
             (yyval.ast)->left = create_ast_node("NUMBER", NULL);
             (yyval.ast)->left->value = malloc(12);
@@ -1600,7 +1600,7 @@ yyreduce:
   case 19:
 #line 154 "parser.y"
     {
-        printf("if\n");
+        printf("\n[CONTROL] IF Statement\n");
         (yyval.ast) = create_ast_node("IF", NULL);
         (yyval.ast)->left = (yyvsp[(3) - (5)].ast);
         (yyval.ast)->right = (yyvsp[(5) - (5)].ast);
@@ -1610,7 +1610,7 @@ yyreduce:
   case 20:
 #line 161 "parser.y"
     {
-        printf("if-else\n");
+        printf("\n[CONTROL] IF-ELSE Statement\n");
         (yyval.ast) = create_ast_node("IF_ELSE", NULL);
         (yyval.ast)->left = (yyvsp[(3) - (7)].ast);
         struct ast_node *then_else = create_ast_node("THEN_ELSE", NULL);
@@ -1722,6 +1722,7 @@ yyreduce:
         if (!s) {
             yyerror("Undefined variable in condition");
         }
+        printf("\n[CONDITION] %s == %d\n", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].ival));
         (yyval.ast) = create_ast_node("COND_EQ", (yyvsp[(1) - (3)].sval));
         (yyval.ast)->left = create_ast_node("NUMBER", NULL);
         (yyval.ast)->left->value = malloc(12);
@@ -1730,7 +1731,7 @@ yyreduce:
     break;
 
   case 36:
-#line 238 "parser.y"
+#line 239 "parser.y"
     {
         struct symbol *s = lookup_symbol((yyvsp[(1) - (3)].sval), current_scope);
         if (!s) {
@@ -1744,7 +1745,7 @@ yyreduce:
     break;
 
   case 37:
-#line 249 "parser.y"
+#line 250 "parser.y"
     {
         struct symbol *s = lookup_symbol((yyvsp[(1) - (3)].sval), current_scope);
         if (!s) {
@@ -1758,7 +1759,7 @@ yyreduce:
     break;
 
   case 38:
-#line 260 "parser.y"
+#line 261 "parser.y"
     {
         struct symbol *s = lookup_symbol((yyvsp[(1) - (3)].sval), current_scope);
         if (!s) {
@@ -1772,7 +1773,7 @@ yyreduce:
     break;
 
   case 39:
-#line 271 "parser.y"
+#line 272 "parser.y"
     {
         struct symbol *s = lookup_symbol((yyvsp[(1) - (3)].sval), current_scope);
         if (!s) {
@@ -1786,7 +1787,7 @@ yyreduce:
     break;
 
   case 40:
-#line 282 "parser.y"
+#line 283 "parser.y"
     {
         struct symbol *s = lookup_symbol((yyvsp[(1) - (3)].sval), current_scope);
         if (!s) {
@@ -1801,7 +1802,7 @@ yyreduce:
 
 
 /* Line 1267 of yacc.c.  */
-#line 1805 "parser.tab.c"
+#line 1806 "parser.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2015,7 +2016,7 @@ yyreturn:
 }
 
 
-#line 294 "parser.y"
+#line 295 "parser.y"
 
 
 struct symbol* lookup_symbol(char *name, int scope) {
@@ -2043,7 +2044,9 @@ void insert_symbol(char *name, int type, int scope) {
     s->value = 0;  // Default value
     
     // Set data type string
-    if (type == 0) {
+    if (strcmp(name, "main") == 0 && scope == 0) {
+        s->dtype = strdup("Function");
+    } else if (type == 0) {
         s->dtype = strdup("int");
     } else if (type == 1) {
         s->dtype = strdup("float");
@@ -2063,15 +2066,18 @@ void update_symbol_value(char *name, int scope, int value) {
 }
 
 void print_symbol_table() {
-    printf("\n---------------\n\n");
-    printf("Symbol Table\n");
-    printf("%-15s %-15s %-15s %-15s\n", "Symbol", "Scope", "dtype", "Value");
+    printf("\n==================================================\n");
+    printf("                 SYMBOL TABLE                 \n");
+    printf("==================================================\n");
+    printf("| %-15s | %-10s | %-15s | %-10s |\n", "Symbol", "Scope", "Data Type", "Value");
+    printf("--------------------------------------------------\n");
     
     struct symbol *s = symbol_table;
     while (s) {
-        printf("%-15s %-15d %-15s %-15d\n", s->name, s->scope, s->dtype, s->value);
+        printf("| %-15s | %-10d | %-15s | %-10d |\n", s->name, s->scope, s->dtype, s->value);
         s = s->next;
     }
+    printf("==================================================\n");
 }
 
 struct ast_node* create_ast_node(char *type, char *value) {
@@ -2085,12 +2091,31 @@ struct ast_node* create_ast_node(char *type, char *value) {
 
 void print_ast(struct ast_node *node, int level) {
     if (!node) return;
-    for (int i = 0; i < level; i++) printf("  ");
+    
+    // Print header for root node
+    if (level == 0) {
+        printf("\n==================================================\n");
+        printf("             ABSTRACT SYNTAX TREE             \n");
+        printf("==================================================\n");
+    }
+    
+    // Print indentation based on level
+    for (int i = 0; i < level; i++) printf("│  ");
+    
+    // Print node information with better formatting
+    if (level > 0) printf("├─ ");
     printf("%s", node->type);
     if (node->value) printf(" (%s)", node->value);
     printf("\n");
+    
+    // Print children
     print_ast(node->left, level + 1);
     print_ast(node->right, level + 1);
+    
+    // Print footer for root node
+    if (level == 0) {
+        printf("==================================================\n");
+    }
 }
 
 void yyerror(const char *msg) {
@@ -2098,6 +2123,11 @@ void yyerror(const char *msg) {
 }
 
 int main() {
+    printf("\n==================================================\n");
+    printf("             C COMPILER PROJECT               \n");
+    printf("==================================================\n");
+    printf("Processing file: test.c\n\n");
+    
     FILE *file = fopen("test.c", "r");
     if (!file) {
         perror("Failed to open test.c");
@@ -2108,6 +2138,9 @@ int main() {
     yyparse();
     fclose(file);
     print_symbol_table();
-    printf("Parsing completed successfully!\n");
+    
+    printf("\n==================================================\n");
+    printf("          COMPILATION COMPLETED SUCCESSFULLY    \n");
+    printf("==================================================\n");
     return 0;
 }
